@@ -4,21 +4,26 @@ using UnityEngine;
 
 public class Tripwire : MonoBehaviour
 {
-    public LineRenderer laserLineRenderer;
-    public float laserWidth = 0.1f;
+    private LineRenderer laser;
+
+
+    public float laserWidth = 0.2f;
     public float range = 10f;
 
     void Start()
     {
+        laser = this.gameObject.AddComponent<LineRenderer>();
+        laser.startWidth = laserWidth;
+        laser.endWidth = laserWidth;
+
         Vector3[] initLaserPositions = new Vector3[2] { Vector3.zero, Vector3.zero };
-        laserLineRenderer.SetPositions(initLaserPositions);
+
+        CheckLaser();
     }
 
     void Update()
     {
-        
-            ShootLaserFromTargetPosition(transform.position, Vector3.up, range);
-            //laserLineRenderer.enabled = true;
+
         
         
     }
@@ -30,26 +35,26 @@ public class Tripwire : MonoBehaviour
         if (Physics.Raycast(this.transform.position, this.transform.forward, out hit, range))
         {
             Debug.DrawLine(this.transform.position, this.transform.forward, Color.red);
+            
         }
     }
 
-    void ShootLaserFromTargetPosition(Vector3 targetPosition, Vector3 direction, float length)
+    void CheckLaser()
     {
-        Ray ray = new Ray(targetPosition, direction);
         RaycastHit hit;
-        Vector3 endPosition = targetPosition + (length * direction);
+        Physics.Raycast(this.transform.position, this.transform.forward, out hit, range);
 
-        if(Physics.Raycast(this.transform.position, this.transform.forward, out hit, range) && hit.transform.tag == "Enemy")
+        laser.SetPosition(0, this.transform.position);
+
+        if (hit.transform.tag == "Wall")
         {
-            Debug.Log("Enemy hit!");
+            SetEndpoint(hit);
         }
+        
+    }
 
-        if (Physics.Raycast(ray, out hit, length))
-        {
-            endPosition = hit.point;
-        }
-
-        laserLineRenderer.SetPosition(0, targetPosition);
-        laserLineRenderer.SetPosition(1, endPosition);
+    void SetEndpoint(RaycastHit hit)
+    {
+        laser.SetPosition(1, hit.normal);
     }
 }
